@@ -85,14 +85,14 @@
       - --timezone Europe/Brussels
 
   - name: Upgrade packages inside container (Ubuntu or Debian).
-    command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
     loop:
       - "apt update"
       - "apt --yes full-upgrade"
     when: distribution == 'debian' or distribution == 'ubuntu' or distribution == 'ubuntults'
 
   - name: Upgrade packages inside container and start OpenSSH server (Fedora).
-    command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
     loop:
       - "dnf upgrade --refresh --assumeyes"
       - "dnf install --assumeyes openssh-server"
@@ -102,7 +102,7 @@
   - name: Permit SSH root login with password.
     block:
       - name: Create temporary sshd configuration file.
-        copy:
+        ansible.builtin.copy:
           content: |
             # Allow root to log in with a password.
             PermitRootLogin yes
@@ -112,27 +112,27 @@
           mode: '0644'
 
       - name: Set PermitRootLogin to yes.
-        command: pct push {{ vmid }} /tmp/permitrootlogin.conf /etc/ssh/sshd_config.d/permitrootlogin.conf
+        ansible.builtin.command: pct push {{ vmid }} /tmp/permitrootlogin.conf /etc/ssh/sshd_config.d/permitrootlogin.conf
 
       - name: Erase temporary sshd configuration file.
-        file:
+        ansible.builtin.file:
           path: /tmp/permitrootlogin.conf
           state: absent
     when: permitrootlogin
 
   - name: Mask failed units.
-    command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
     loop:
       - "systemctl mask sys-kernel-config.mount"
       - "systemctl mask sys-kernel-debug.mount"
       - "systemctl mask systemd-journald-audit.socket"
 
   - name: Mask apparmor service.
-    command: pct exec {{ vmid }} -- bash -c  "systemctl mask apparmor.service"
+    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "systemctl mask apparmor.service"
     when: not unprivileged
 
   - name: Restart {{ lxchostname }}.{{ lxcdomain }}.
-    proxmox:
+    community.general.proxmox:
       vmid: "{{ vmid }}"
       api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
       api_user: root@pam
@@ -141,13 +141,13 @@
       state: restarted
 
   - name: Remove existing public key from known_hosts.
-    known_hosts:
+    ansible.builtin.known_hosts:
       name: "{{ lxchostname }}.{{ lxcdomain }}"
       state: absent
     delegate_to: localhost
 
   - name: Fetch SSH hostkey from {{ lxchostname }}.{{ lxcdomain }}.
-    command: "pct pull {{ vmid }} /etc/ssh/{{ item }} /tmp/{{ item }}"
+    ansible.builtin.command: "pct pull {{ vmid }} /etc/ssh/{{ item }} /tmp/{{ item }}"
     loop:
       - ssh_host_dsa_key.pub
       - ssh_host_ecdsa_key.pub
@@ -155,7 +155,7 @@
       - ssh_host_rsa_key.pub
 
   - name: Read SSH hostkeys.
-    slurp:
+    ansible.builtin.slurp:
       src: "/tmp/{{ item }}"
     loop:
       - ssh_host_dsa_key.pub
@@ -167,7 +167,7 @@
   run_once: true
 
 - name: Add public keys to known_hosts.
-  known_hosts:
+  ansible.builtin.known_hosts:
     name: "{{ lxchostname }}.{{ lxcdomain }}"
     key: "{{ lxchostname }}.{{ lxcdomain }} {{ item['content'] | b64decode }}"
   loop: "{{ ssh_host_keys['results'] |list }}"
