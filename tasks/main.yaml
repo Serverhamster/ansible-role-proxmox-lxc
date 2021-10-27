@@ -79,7 +79,7 @@
     when: boot is changed
     delegate_to: localhost
   - name: Set extra container options
-    command: pct set {{ vmid }} {{ item }}
+    ansible.builtin.command: pct set {{ vmid }} {{ item }}
     loop:
       - --description "{{ notes }}"
       - --timezone Europe/Brussels
