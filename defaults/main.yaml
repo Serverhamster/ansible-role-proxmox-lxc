@@ -1,0 +1,24 @@
+---
+# defaults file for proxmox_lxc
+distribution: 'debian'  # Possible values: 'debian', 'ubuntu', 'ubuntults', 'fedora'
+proxmoxhost: 'ghanima'
+proxmoxdomain: 'alvin.be'
+cttemplatestor: 'shai-hulud'
+ostemplate: "{{ ubuntutemplate if distribution == 'ubuntu' else ubuntultstemplate if distribution == 'ubuntults' else debiantemplate if distribution == 'debian' else fedoratemplate if distribution == 'fedora'}}"
+storage: 'local-zfs'
+notes: 'Ansible node on {{ distribution }}'
+cpuunits: '1024' # Default: 1024
+#vlan: '4'
+mknod: false            # set mknod to true and unprivileged to no when e.g. OpenConnect is needed
+ppp: false              # allow ppp for openfortivpn
+unprivileged: true      # 'no' or 'yes'
+nesting: false          # 'no' or 'yes' (only when unprivileged=0)
+ct_password: "{{ proxmox_password }}"
+permitrootlogin: no
+lxcdomain: 'howest.serverhamster.be'
+netif: '{"net0":"name=eth0,ip=dhcp,ip6=auto,bridge=vmbr0,tag={{ vlan }}"}'
+lxcnameserver: '192.168.104.2'
+memory: '1024'
+swap: '256'
+cores: '1'
+disk: '4'
