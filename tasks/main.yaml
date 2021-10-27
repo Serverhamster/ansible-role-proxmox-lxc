@@ -1,11 +1,16 @@
 ---
+- name: Ensure proxmoxer is installed.
+  ansible.builtin.apt:
+    name: python3-proxmoxer
+    state: present
+
 - name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
   community.general.proxmox:
     vmid: "{{ vmid | default(omit) }}"
-    api_host: "{{ proxmoxhost | default(ansible_host) }}.{{ proxmoxdomain | default(ansible_domain) }}"
+    api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
     api_user: root@pam
     api_password: "{{ proxmox_password }}"
-    node: "{{ proxmoxhost | default(ansible_host) }}"
+    node: "{{ proxmoxhost | default(ansible_hostname) }}"
     hostname: "{{ lxchostname }}.{{ lxcdomain }}"
     cores: "{{ cores |default(1) }}"
     cpus: '0'
@@ -22,7 +27,7 @@
     searchdomain: "{{ lxcdomain }}"
     unprivileged: "{{ unprivileged }}"
     onboot: yes
-  delegate_to: localhost
+  run_once: true
 
 - name: Run tasks on Proxmox VE host.
   block:
@@ -61,16 +66,15 @@
   - name: Start {{ lxchostname }}.{{ lxcdomain }}.
     community.general.proxmox:
       vmid: "{{ vmid | default(omit) }}"
-      api_host: "{{ proxmoxhost | default(ansible_host) }}.{{ proxmoxdomain | default(ansible_domain) }}"
+      api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
       api_user: root@pam
       api_password: "{{ proxmox_password }}"
-      node: "{{ proxmoxhost }}"
+      node: "{{ proxmoxhost | default(ansible_hostname) }}"
       state: started
     register: boot
-    delegate_to: localhost
 
   - name: Wait 5 seconds for boot.
-    wait_for:
+    ansible.builtin.wait_for:
       timeout: 10
     when: boot is changed
     delegate_to: localhost
@@ -130,12 +134,11 @@
   - name: Restart {{ lxchostname }}.{{ lxcdomain }}.
     proxmox:
       vmid: "{{ vmid }}"
-      api_host: "{{ proxmoxhost }}.{{ proxmoxdomain }}"
+      api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
       api_user: root@pam
       api_password: "{{ proxmox_password }}"
-      node: "{{ proxmoxhost }}"
+      node: "{{ proxmoxhost | default(ansible_hostname) }}"
       state: restarted
-    delegate_to: localhost
 
   - name: Remove existing public key from known_hosts.
     known_hosts:
@@ -160,7 +163,8 @@
       - ssh_host_ed25519_key.pub
       - ssh_host_rsa_key.pub
     register: ssh_host_keys
-  delegate_to: "{{ proxmoxhost }}.{{ proxmoxdomain }}"
+  delegate_to: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
+  run_once: true
 
 - name: Add public keys to known_hosts.
   known_hosts:
