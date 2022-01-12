@@ -27,4 +27,3 @@
     unprivileged: "{{ unprivileged }}"
     onboot: yes
     features: "{{ features }}"
-  run_once: true
