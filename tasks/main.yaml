@@ -4,6 +4,7 @@
 
 - name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
   community.general.proxmox:
+    proxmox_default_behavior: no_defaults
     vmid: "{{ vmid | default(omit) }}"
     api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
     api_user: root@pam

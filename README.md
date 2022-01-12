@@ -11,7 +11,7 @@ Run this role on your Proxmox server(s) as host. If you specify a group of multi
 Role Variables
 --------------
 
-*vars\main.yaml* contains
+*vars/main.yaml* contains
 * `debiantemplate`
 * `ubuntultstemplate`
 * `ubuntutemplate`
