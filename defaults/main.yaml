@@ -13,11 +13,14 @@ mknod: false            # set mknod to true and unprivileged to no when e.g. Ope
 ppp: false              # allow ppp for openfortivpn
 unprivileged: true      # 'no' or 'yes'
 nesting: false          # 'no' or 'yes' (only when unprivileged=0)
+features:
+  - nesting=1
+  #- mount=cifs,nfs  # TODO: Only works when unprivileged is false.
 ct_password: "{{ proxmox_password }}"
 permitrootlogin: no
 lxcdomain: 'howest.serverhamster.be'
 netif: '{"net0":"name=eth0,ip=dhcp,ip6=auto,bridge=vmbr0,tag={{ vlan }}"}'
-lxcnameserver: '192.168.104.2'
+#lxcnameserver: '192.168.104.2'
 memory: '1024'
 swap: '256'
 cores: '1'

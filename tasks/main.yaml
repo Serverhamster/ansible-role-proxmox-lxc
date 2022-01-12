@@ -23,10 +23,11 @@
     ostemplate: "{{ ostemplate }}"
     storage: "{{ storage | default('local') }}"
     netif: "{{ netif }}"
-    nameserver: "{{ lxcnameserver }}"
+    nameserver: "{{ lxcnameserver | default(omit) }}"
     searchdomain: "{{ lxcdomain }}"
     unprivileged: "{{ unprivileged }}"
     onboot: yes
+    features: "{{ features }}"
   run_once: true
 
 - name: Run tasks on Proxmox VE host.
@@ -56,9 +57,9 @@
       - 'lxc.mount.entry: /dev/ppp dev/ppp none bind,create=file'
     when: ppp
 
-  - name: Set nesting feature in container.
-    ansible.builtin.command: "pct set {{ vmid }} --features nesting=1"
-    when: nesting|bool
+  # - name: Set nesting feature in container.
+  #   ansible.builtin.command: "pct set {{ vmid }} --features nesting=1"
+  #   when: nesting|bool
 
   - name: move configuration of container back.
     command: "mv --update --verbose /tmp/{{ vmid }}.conf /etc/pve/lxc/{{ vmid }}.conf"
@@ -124,7 +125,7 @@
     ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
     loop:
       - "systemctl mask sys-kernel-config.mount"
-      - "systemctl mask sys-kernel-debug.mount"
+      #- "systemctl mask sys-kernel-debug.mount"
       - "systemctl mask systemd-journald-audit.socket"
 
   - name: Mask apparmor service.
