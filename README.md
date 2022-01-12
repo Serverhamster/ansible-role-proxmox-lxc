@@ -1,12 +1,12 @@
-Role Name
+proxmox_lxc
 =========
 
-You'll need to install [proxmoxer](https://github.com/proxmoxer/proxmoxer) on the host where this role runs.
+Install a [Proxmox](https://www.proxmox.com/) based [LXC](https://linuxcontainers.org/) container.
 
 Requirements
 ------------
 
-Run this role with your Proxmox server(s) as host. If you specify a group of multiple servers, the LXC container will only be installed once due to `run_once: true` in all tasks.
+Run this role on your Proxmox server(s) as host. If you specify a group of multiple servers, the LXC container will only be installed once due to `run_once: true` in all tasks.
 
 Role Variables
 --------------
