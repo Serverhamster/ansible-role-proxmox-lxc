@@ -1,5 +1,5 @@
 ---
-- name: Installation requirements.
+- name: Import installation requirements.
   ansible.builtin.import_tasks: requirements.yaml
 
 - name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
