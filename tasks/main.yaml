@@ -1,8 +1,6 @@
 ---
-- name: Ensure proxmoxer is installed.
-  ansible.builtin.apt:
-    name: python3-proxmoxer
-    state: present
+- name: Installation requirements.
+  ansible.builtin.import_tasks: requirements.yaml
 
 - name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
   community.general.proxmox:
