@@ -2,31 +2,8 @@
 - name: Import installation requirements.
   ansible.builtin.import_tasks: requirements.yaml
 
-- name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
-  community.general.proxmox:
-    proxmox_default_behavior: no_defaults
-    vmid: "{{ vmid | default(omit) }}"
-    api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
-    api_user: root@pam
-    api_password: "{{ proxmox_password }}"
-    node: "{{ proxmoxhost | default(ansible_hostname) }}"
-    hostname: "{{ lxchostname }}.{{ lxcdomain }}"
-    cores: "{{ cores |default(1) }}"
-    cpus: '0'
-    cpuunits: "{{ cpuunits }}"
-    memory: "{{ memory }}"
-    swap: "{{ swap }}"
-    disk: "{{ disk }}"
-    pubkey: "{{ lookup('file','~/Nextcloud/config/ssh/authorized_keys') }}"
-    password: "{{ ct_password }}"
-    ostemplate: "{{ ostemplate }}"
-    storage: "{{ storage | default('local') }}"
-    netif: "{{ netif }}"
-    nameserver: "{{ lxcnameserver | default(omit) }}"
-    searchdomain: "{{ lxcdomain }}"
-    unprivileged: "{{ unprivileged }}"
-    onboot: yes
-    features: "{{ features }}"
+- name: Import container creation.
+  ansible.builtin.import_tasks: addcontainer.yaml
   run_once: true
 
 - name: Run tasks on Proxmox VE host.
