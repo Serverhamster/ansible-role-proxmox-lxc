@@ -16,6 +16,7 @@ nesting: false          # 'no' or 'yes' (only when unprivileged=0)
 features:
   - nesting=1
   #- mount=cifs,nfs  # TODO: Only works when unprivileged is false.
+  #- mknod=1 if mknod is set
 ct_password: "{{ proxmox_password }}"
 permitrootlogin: no
 lxcdomain: 'howest.serverhamster.be'

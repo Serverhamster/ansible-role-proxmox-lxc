@@ -27,10 +27,6 @@
       - 'lxc.mount.entry: /dev/ppp dev/ppp none bind,create=file'
     when: ppp
 
-  # - name: Set nesting feature in container.
-  #   ansible.builtin.command: "pct set {{ vmid }} --features nesting=1"
-  #   when: nesting|bool
-
   - name: move configuration of container back.
     command: "mv --update --verbose /tmp/{{ vmid }}.conf /etc/pve/lxc/{{ vmid }}.conf"
 
