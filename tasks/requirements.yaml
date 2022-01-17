@@ -12,6 +12,7 @@
       state: present
   when: ansible_os_family == "Debian"
 
+# Technically unused because or the requirement to run this on PVE servers.
 - name: Requirements (Red Hat family).
   block:
   - name: Ensure Python module proxmoxer is installed (pip).
