@@ -47,7 +47,7 @@ Look at *defaults/main.yaml* for variables to use in your playbooks.
 * `memory`: '1024'
 * `swap`: '256'
 * `cores`: '1'
-* `disk`: '4'
+* `disksize`: '4'           # disk Size of the root filesystem in Gigabytes
 
 
 Example Playbook

@@ -18,12 +18,6 @@
       dest: /tmp
       remote_src: yes
 
-  - name: Set 'noatime' mount option on rootfs in container.
-    ansible.builtin.replace:
-      path: "/tmp/{{ vmid }}.conf"
-      regexp: '^(rootfs.+G)$'
-      replace: '\1,mountoptions=noatime'
-
   - name: Set ppp feature in container.
     ansible.builtin.lineinfile:
       path: "/tmp/{{ vmid }}.conf"
