@@ -32,6 +32,7 @@
 
   - name: Start {{ lxchostname }}.{{ lxcdomain }}.
     community.general.proxmox:
+      proxmox_default_behavior: no_defaults
       vmid: "{{ vmid | default(omit) }}"
       api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
       api_user: root@pam
@@ -100,6 +101,7 @@
 
   - name: Restart {{ lxchostname }}.{{ lxcdomain }}.
     community.general.proxmox:
+      proxmox_default_behavior: no_defaults
       vmid: "{{ vmid }}"
       api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
       api_user: root@pam
