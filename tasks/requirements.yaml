@@ -1,4 +1,5 @@
 ---
+# This block will run when executing on a Proxmox server (or any Debian/Ubuntu family)
 - name: Requirements (Debian family).
   block:
   - name: Ensure Python module proxmoxer is installed (apt).
@@ -12,7 +13,7 @@
       state: present
   when: ansible_os_family == "Debian"
 
-# Technically unused because or the requirement to run this on PVE servers.
+# This block runs when executing on Fedora/CentOS/RedHat (never Proxmox).
 - name: Requirements (Red Hat family).
   block:
   - name: Ensure pip is available (dnf).
