@@ -5,7 +5,7 @@
 - name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
   community.general.proxmox:
     proxmox_default_behavior: no_defaults
-    vmid: "{{ vmid | default(omit) }}"
+    vmid: "{{ vmid }}"  # omit is not possible yet. We need to store the new id in that case (register)
     api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
     api_user: root@pam
     api_password: "{{ proxmox_password }}"

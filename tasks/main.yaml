@@ -12,10 +12,11 @@
     ansible.builtin.command: "pct set {{ vmid }} --features mknod=1"
     when: mknod
 
-  - name: copy configuration of container to /tmp.
+  - name: copy configuration of container to temporary location.
     ansible.builtin.copy:
       src: "/etc/pve/lxc/{{ vmid }}.conf"
       dest: /tmp
+      mode: '0640'
       remote_src: yes
 
   - name: Set ppp feature in container.
