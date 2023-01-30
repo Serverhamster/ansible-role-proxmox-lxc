@@ -11,7 +11,7 @@
     api_password: "{{ proxmox_password }}"
     node: "{{ proxmoxhost | default(ansible_hostname) }}"
     hostname: "{{ lxchostname }}.{{ lxcdomain }}"
-    cores: "{{ cores |default(1) }}"
+    cores: "{{ cores | default(1) }}"
     cpus: '0'
     cpuunits: "{{ cpuunits }}"
     memory: "{{ memory }}"
@@ -24,5 +24,5 @@
     nameserver: "{{ lxcnameserver | default(omit) }}"
     searchdomain: "{{ lxcdomain }}"
     unprivileged: "{{ unprivileged }}"
-    onboot: yes
+    onboot: true
     features: "{{ features }}"
