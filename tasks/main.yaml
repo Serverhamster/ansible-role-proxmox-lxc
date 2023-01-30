@@ -89,12 +89,13 @@
           state: absent
     when: permitrootlogin
 
-  - name: Mask failed units.
-    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
-    loop:
-      - "systemctl mask sys-kernel-config.mount"
-      #- "systemctl mask sys-kernel-debug.mount"
-      - "systemctl mask systemd-journald-audit.socket"
+  # Niet langer nodig met Ubuntu 22.04. Check andere!
+  # - name: Mask failed units.
+  #   ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+  #   loop:
+  #     - "systemctl mask sys-kernel-config.mount"
+  #     #- "systemctl mask sys-kernel-debug.mount"
+  #     - "systemctl mask systemd-journald-audit.socket"
 
   - name: Mask apparmor service.
     ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "systemctl mask apparmor.service"
