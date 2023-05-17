@@ -69,6 +69,7 @@
     when: distribution == 'fedora'
 
   - name: Permit SSH root login with password.
+    when: permitrootlogin
     block:
       - name: Create temporary sshd configuration file.
         ansible.builtin.copy:
@@ -87,7 +88,6 @@
         ansible.builtin.file:
           path: /tmp/permitrootlogin.conf
           state: absent
-    when: permitrootlogin
 
   # Niet langer nodig met Ubuntu 22.04. Check andere!
   # - name: Mask failed units.
