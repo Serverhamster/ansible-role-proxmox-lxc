@@ -2,7 +2,7 @@
 # Add Proxmox LXC container
 # Documentation: https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_module.html
 
-- name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}.
+- name: Add {{ distribution }} LXC container {{ lxchostname }}.{{ lxcdomain }}
   community.general.proxmox:
     proxmox_default_behavior: no_defaults
     vmid: "{{ vmid }}"  # omit is not possible yet. We need to store the new id in that case (register)
@@ -17,7 +17,7 @@
     memory: "{{ memory }}"
     swap: "{{ swap }}"
     disk: "{{ storage | default('local') }}:{{ disksize }},mountoptions=noatime"
-    pubkey: "{{ lookup('file','~/Nextcloud/config/ssh/authorized_keys') }}"
+    pubkey: "{{ lookup('file', '~/Nextcloud/config/ssh/authorized_keys') }}"
     password: "{{ ct_password }}"
     ostemplate: "{{ ostemplate }}"
     netif: "{{ netif }}"

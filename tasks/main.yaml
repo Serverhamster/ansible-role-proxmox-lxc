@@ -7,139 +7,139 @@
   run_once: true
 
 - name: Run tasks on Proxmox VE host.
-  block:
-  - name: Set mknod feature in container.
-    ansible.builtin.command: "pct set {{ vmid }} --features mknod=1"
-    when: mknod
-
-  - name: copy configuration of container to temporary location.
-    ansible.builtin.copy:
-      src: "/etc/pve/lxc/{{ vmid }}.conf"
-      dest: /tmp
-      mode: '0640'
-      remote_src: yes
-
-  - name: Set ppp feature in container.
-    ansible.builtin.lineinfile:
-      path: "/tmp/{{ vmid }}.conf"
-      line: "{{ item }}"
-    loop:
-      - 'lxc.cgroup.devices.allow: c 108:0 rwm'
-      - 'lxc.mount.entry: /dev/ppp dev/ppp none bind,create=file'
-    when: ppp
-
-  - name: move configuration of container back.
-    command: "mv --update --verbose /tmp/{{ vmid }}.conf /etc/pve/lxc/{{ vmid }}.conf"
-
-  - name: Start {{ lxchostname }}.{{ lxcdomain }}.
-    community.general.proxmox:
-      proxmox_default_behavior: no_defaults
-      vmid: "{{ vmid | default(omit) }}"
-      api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
-      api_user: root@pam
-      api_password: "{{ proxmox_password }}"
-      node: "{{ proxmoxhost | default(ansible_hostname) }}"
-      state: started
-    register: boot
-
-  - name: Wait 5 seconds for boot.
-    ansible.builtin.wait_for:
-      timeout: 10
-    when: boot is changed
-    delegate_to: localhost
-  - name: Set extra container options
-    ansible.builtin.command: pct set {{ vmid }} {{ item }}
-    loop:
-      - --description "{{ notes }}"
-      - --timezone Europe/Brussels
-
-  - name: Upgrade packages inside container (Ubuntu or Debian).
-    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
-    loop:
-      - "apt update"
-      - "apt --yes full-upgrade"
-    when: distribution == 'debian' or distribution == 'ubuntu' or distribution == 'ubuntults'
-
-  - name: Upgrade packages inside container and start OpenSSH server (Fedora).
-    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
-    loop:
-      - "dnf upgrade --refresh --assumeyes"
-      - "dnf install --assumeyes openssh-server"
-      - "systemctl enable --now sshd.service"
-    when: distribution == 'fedora'
-
-  - name: Permit SSH root login with password.
-    when: permitrootlogin
-    block:
-      - name: Create temporary sshd configuration file.
-        ansible.builtin.copy:
-          content: |
-            # Allow root to log in with a password.
-            PermitRootLogin yes
-          dest: /tmp/permitrootlogin.conf
-          owner: root
-          group: root
-          mode: '0644'
-
-      - name: Set PermitRootLogin to yes.
-        ansible.builtin.command: pct push {{ vmid }} /tmp/permitrootlogin.conf /etc/ssh/sshd_config.d/permitrootlogin.conf
-
-      - name: Erase temporary sshd configuration file.
-        ansible.builtin.file:
-          path: /tmp/permitrootlogin.conf
-          state: absent
-
-  # Niet langer nodig met Ubuntu 22.04. Check andere!
-  # - name: Mask failed units.
-  #   ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
-  #   loop:
-  #     - "systemctl mask sys-kernel-config.mount"
-  #     #- "systemctl mask sys-kernel-debug.mount"
-  #     - "systemctl mask systemd-journald-audit.socket"
-
-  - name: Mask apparmor service.
-    ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "systemctl mask apparmor.service"
-    when: not unprivileged
-
-  - name: Restart {{ lxchostname }}.{{ lxcdomain }}.
-    community.general.proxmox:
-      proxmox_default_behavior: no_defaults
-      vmid: "{{ vmid }}"
-      api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
-      api_user: root@pam
-      api_password: "{{ proxmox_password }}"
-      node: "{{ proxmoxhost | default(ansible_hostname) }}"
-      state: restarted
-
-  - name: Remove existing public key from known_hosts.
-    ansible.builtin.known_hosts:
-      name: "{{ lxchostname }}.{{ lxcdomain }}"
-      state: absent
-    delegate_to: localhost
-
-  - name: Fetch SSH hostkey from {{ lxchostname }}.{{ lxcdomain }}.
-    ansible.builtin.command: "pct pull {{ vmid }} /etc/ssh/{{ item }} /tmp/{{ item }}"
-    loop:
-      - ssh_host_dsa_key.pub
-      - ssh_host_ecdsa_key.pub
-      - ssh_host_ed25519_key.pub
-      - ssh_host_rsa_key.pub
-
-  - name: Read SSH hostkeys.
-    ansible.builtin.slurp:
-      src: "/tmp/{{ item }}"
-    loop:
-      - ssh_host_dsa_key.pub
-      - ssh_host_ecdsa_key.pub
-      - ssh_host_ed25519_key.pub
-      - ssh_host_rsa_key.pub
-    register: ssh_host_keys
   delegate_to: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
   run_once: true
+  block:
+    - name: Set mknod feature in container.
+      ansible.builtin.command: "pct set {{ vmid }} --features mknod=1"
+      when: mknod
+
+    - name: Copy configuration of container to temporary location.
+      ansible.builtin.copy:
+        src: "/etc/pve/lxc/{{ vmid }}.conf"
+        dest: /tmp
+        mode: '0640'
+        remote_src: true
+
+    - name: Set ppp feature in container.
+      ansible.builtin.lineinfile:
+        path: "/tmp/{{ vmid }}.conf"
+        line: "{{ item }}"
+      loop:
+        - 'lxc.cgroup.devices.allow: c 108:0 rwm'
+        - 'lxc.mount.entry: /dev/ppp dev/ppp none bind,create=file'
+      when: ppp
+
+    - name: Move configuration of container back.
+      ansible.builtin.command: "mv --update --verbose /tmp/{{ vmid }}.conf /etc/pve/lxc/{{ vmid }}.conf"
+
+    - name: Start {{ lxchostname }}.{{ lxcdomain }}
+      community.general.proxmox:
+        proxmox_default_behavior: no_defaults
+        vmid: "{{ vmid | default(omit) }}"
+        api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
+        api_user: root@pam
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmoxhost | default(ansible_hostname) }}"
+        state: started
+      register: boot
+
+    - name: Wait 5 seconds for boot.
+      ansible.builtin.wait_for:
+        timeout: 10
+      when: boot is changed
+      delegate_to: localhost
+    - name: Set extra container options
+      ansible.builtin.command: pct set {{ vmid }} {{ item }}
+      loop:
+        - --description "{{ notes }}"
+        - --timezone Europe/Brussels
+
+    - name: Upgrade packages inside container (Ubuntu or Debian).
+      ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+      loop:
+        - "apt update"
+        - "apt --yes full-upgrade"
+      when: distribution == 'debian' or distribution == 'ubuntu' or distribution == 'ubuntults'
+
+    - name: Upgrade packages inside container and start OpenSSH server (Fedora).
+      ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+      loop:
+        - "dnf upgrade --refresh --assumeyes"
+        - "dnf install --assumeyes openssh-server"
+        - "systemctl enable --now sshd.service"
+      when: distribution == 'fedora'
+
+    - name: Permit SSH root login with password.
+      when: permitrootlogin
+      block:
+        - name: Create temporary sshd configuration file.
+          ansible.builtin.copy:
+            content: |
+              # Allow root to log in with a password.
+              PermitRootLogin yes
+            dest: /tmp/permitrootlogin.conf
+            owner: root
+            group: root
+            mode: '0644'
+
+        - name: Set PermitRootLogin to yes.
+          ansible.builtin.command: pct push {{ vmid }} /tmp/permitrootlogin.conf /etc/ssh/sshd_config.d/permitrootlogin.conf
+
+        - name: Erase temporary sshd configuration file.
+          ansible.builtin.file:
+            path: /tmp/permitrootlogin.conf
+            state: absent
+
+    # Niet langer nodig met Ubuntu 22.04. Check andere!
+    # - name: Mask failed units.
+    #   ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "{{ item }}"
+    #   loop:
+    #     - "systemctl mask sys-kernel-config.mount"
+    #     #- "systemctl mask sys-kernel-debug.mount"
+    #     - "systemctl mask systemd-journald-audit.socket"
+
+    - name: Mask apparmor service.
+      ansible.builtin.command: pct exec {{ vmid }} -- bash -c  "systemctl mask apparmor.service"
+      when: not unprivileged
+
+    - name: Restart {{ lxchostname }}.{{ lxcdomain }}
+      community.general.proxmox:
+        proxmox_default_behavior: no_defaults
+        vmid: "{{ vmid }}"
+        api_host: "{{ proxmoxhost | default(ansible_hostname) }}.{{ proxmoxdomain | default(ansible_domain) }}"
+        api_user: root@pam
+        api_password: "{{ proxmox_password }}"
+        node: "{{ proxmoxhost | default(ansible_hostname) }}"
+        state: restarted
+
+    - name: Remove existing public key from known_hosts.
+      ansible.builtin.known_hosts:
+        name: "{{ lxchostname }}.{{ lxcdomain }}"
+        state: absent
+      delegate_to: localhost
+
+    - name: Fetch SSH hostkey from {{ lxchostname }}.{{ lxcdomain }}
+      ansible.builtin.command: "pct pull {{ vmid }} /etc/ssh/{{ item }} /tmp/{{ item }}"
+      loop:
+        - ssh_host_dsa_key.pub
+        - ssh_host_ecdsa_key.pub
+        - ssh_host_ed25519_key.pub
+        - ssh_host_rsa_key.pub
+
+    - name: Read SSH hostkeys.
+      ansible.builtin.slurp:
+        src: "/tmp/{{ item }}"
+      loop:
+        - ssh_host_dsa_key.pub
+        - ssh_host_ecdsa_key.pub
+        - ssh_host_ed25519_key.pub
+        - ssh_host_rsa_key.pub
+      register: ssh_host_keys
 
 - name: Add public keys to known_hosts.
   ansible.builtin.known_hosts:
     name: "{{ lxchostname }}.{{ lxcdomain }}"
     key: "{{ lxchostname }}.{{ lxcdomain }} {{ item['content'] | b64decode }}"
-  loop: "{{ ssh_host_keys['results'] |list }}"
+  loop: "{{ ssh_host_keys['results'] | list }}"
   delegate_to: localhost
