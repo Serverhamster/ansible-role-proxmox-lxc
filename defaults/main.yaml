@@ -4,13 +4,7 @@ distribution: 'debian'  # Possible values: 'debian', 'ubuntu', 'ubuntults', 'fed
 # proxmoxhost: 'ghanima'
 # proxmoxdomain: 'alvin.be'
 cttemplatestor: 'shai-hulud'
-ostemplate: >-
-  "{{
-    ubuntutemplate if distribution == 'ubuntu'
-    else ubuntultstemplate if distribution == 'ubuntults'
-    else debiantemplate if distribution == 'debian'
-    else fedoratemplate if distribution == 'fedora'
-  }}"
+ostemplate: "{{ ubuntutemplate if distribution == 'ubuntu' else ubuntultstemplate if distribution == 'ubuntults' else debiantemplate if distribution == 'debian' else fedoratemplate if distribution == 'fedora' }}"
 storage: 'local-zfs'
 notes: 'Ansible node on {{ distribution }}'
 cpuunits: '1024' # Default: 1024
